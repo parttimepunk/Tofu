@@ -1,0 +1,22 @@
+# Machine state and builds
+.DS_Store
+.build/
+.swiftpm/
+.codex/
+web/node_modules/
+web/dist/
+**/.vercel/
+# Local deliverables / experiments / libraries
+outputs/
+work/
+*.log
+# Credentials and local environment
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.p12
+*.mobileprovision
