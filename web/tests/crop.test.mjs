@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {fullCrop,fitRatio,detectEdges} from '../src/crop.mjs';
+import {emptyDocument,newItem,validate,mergeDocuments} from '../src/model.mjs';
+test('ratio crop stays inside source and preserves ratio',()=>{for(const ratio of [1,.8,.75,16/9,9/16]){const c=fitRatio(fullCrop(300,600),ratio);assert.ok(c.x>=0&&c.y>=0&&c.x+c.w<=1&&c.y+c.h<=1);assert.ok(Math.abs(c.w*300/(c.h*600)-ratio)<1e-8);}});
+test('dark bands are suggested but nonblack edges remain',()=>{const w=100,h=100,d=new Uint8ClampedArray(w*h*4);for(let y=10;y<90;y++)for(let x=0;x<w;x++){let i=(y*w+x)*4;d[i]=180;d[i+1]=90;d[i+2]=70;}assert.deepEqual(detectEdges(d,w,h),{x:0,y:.1,w:1,h:.8});d.fill(255);assert.deepEqual(detectEdges(d,w,h),{x:0,y:0,w:1,h:1});});
+test('crop and rename merge independently while invalid crop is rejected',()=>{const i=newItem('image'),base={...emptyDocument(),items:[i]},left=structuredClone(base),right=structuredClone(base);left.items[0].crop={...fullCrop(100,200),y:.1,h:.8};right.items[0].title='Poster';const merged=mergeDocuments(base,left,right);assert.equal(merged.items[0].title,'Poster');assert.equal(merged.items[0].crop.h,.8);validate(merged);merged.items[0].crop.w=2;assert.throws(()=>validate(merged),/crop/);});

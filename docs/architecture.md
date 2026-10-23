@@ -12,6 +12,7 @@ React/Vite 静态应用 → IndexedDB 本地库 → 登录后显式连接 → Su
 | `media.mjs` | 复制原文件、图片缩略图、尽力读取音视频元数据 |
 | `storage.mjs` | IndexedDB 事务、账号分区、元数据快照 |
 | `cloud.mjs` | 身份固定、对象上传、版本比较交换（CAS）、冲突保留、签名 URL |
+| `crop.mjs` / `CropEditor.jsx` | 可选归一化裁剪范围、暗色边缘建议、比例选择及统一显示 |
 | `style.css` | 响应式布局与两套主题 |
 | `scripts/build-sw.mjs` | 程序缓存版本、离线策略及 Vercel 响应头 |
 | `sync/schema.sql` | 表、RPC、RLS、私有 bucket 权限；首次建库 SQL，不是重复执行的迁移器 |
@@ -41,3 +42,5 @@ Export metadata backup 导出文档/同步状态，不含原件。原生 Mac Exp
 ## 原生保留版本
 
 SwiftPM + SwiftUI，媒体播放器通过 AppKit/AVKit 桥接。源码分 App / Views / Models / Stores / Services / Support；真实库位于 `~/Library/Application Support/Tofu`。测试必须使用任务生成的独立目录，绝不写入真实库。
+
+图片 crop 为 schema v1 的可选字段，保存 x/y/w/h 和原图尺寸，校验范围；不生成新原件、不更换媒体对象。图库缩略图与详情按同一比例裁切显示。旧记录缺少此字段时保持完整显示，导出元数据会携带裁剪设置。

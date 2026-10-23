@@ -1,4 +1,4 @@
-# 当前交接 — 2026-10-22
+# 当前交接 — 2026-10-23
 
 下一位协作者先读 AGENTS.md，再读本文件；不要根据旧安装包或早期设计稿判断当前产品状态。
 
@@ -60,3 +60,13 @@ README 为入口；docs/assets 保留现行参考图，web/tests/fixtures 保留
 ## 公开发布完成 — 2026-10-22
 
 已按用户授权创建公开 GitHub 仓库并推送 main 分支，使用新的干净提交历史。79 个文件，提交前检查未检出原个人标识或秘密模式；.env.example 为空示例，未上传 work/ 或真实配置。许可证为 Tofu Personal Noncommercial License 1.0，仅允许个人自用，不采用 MIT、不允许商用。Git 提交身份采用项目通用名称与平台隐私邮箱。实际仓库地址以 Git origin 为准，个人部署地址不写入源码。既有个人线上服务未重新部署。
+
+## 2026-10-23 — Image cropping and quick rename
+
+Crop Image preserves the original and stores a validated normalized optional crop in schema v1. Gallery and detail share the same crop. Free bounds and 1:1 / 4:5 / 3:4 / 16:9 / 9:16 are supported; Reset restores the full view. Dark-border detection is a suggestion requiring review, never an automatic destructive edit. Rename changes the display title, not the original filename. Existing Edit retains Notes. Both changes use the current metadata sync.
+
+21 unit checks, build, 12 existing UI checks, and the generated mobile crop/rename flow passed locally. New script: web/scripts/crop-check.mjs. Actual iPhone/cloud crop display remains unverified. User explicitly approved updating the existing website and GitHub source on 2026-10-23; publication verification is recorded below.
+
+### Publication verification
+
+The user authorized website + GitHub updates. The existing private-config deployment was updated on 2026-10-23. Live-domain crop/rename checks passed (suggestion, save/reload, 4:5, reset and no runtime errors), along with 12 existing UI/playback checks and 5 offline checks. Unit suite: 21 passing. Tests used generated media in isolated browser contexts without signing into the personal account. Public-source privacy scan passed; production configuration remains only in ignored local files/builds. No new backend schema migration or paid service was introduced. Actual iPhone cross-device crop display still requires user acceptance.

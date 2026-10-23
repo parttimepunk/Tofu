@@ -6,6 +6,7 @@ const equal=(a,b)=>stable(a)===stable(b);
 export function validURL(s){try{const u=new URL(s);return ['https:','http:'].includes(u.protocol)?u.href:null;}catch{return null;}}
 export function validate(doc){
   if(doc?.version!==1||!Array.isArray(doc.items)||!Array.isArray(doc.collections)||doc.items.length>10000)throw Error('This library is unsupported. Your stored data has been preserved.');
+  for(const i of doc.items){const c=i.crop;if(c&&(!['x','y','w','h','sourceWidth','sourceHeight'].every(k=>Number.isFinite(c[k]))||c.x<0||c.y<0||c.w<=0||c.h<=0||c.x+c.w>1.000001||c.y+c.h>1.000001||c.sourceWidth<=0||c.sourceHeight<=0))throw Error('Invalid crop metadata. Writes are disabled.');}
   const ids=new Set();
   for(const i of doc.items){if(typeof i.id!=='string'||!i.id||ids.has(i.id)||typeof i.title!=='string'||!['image','video','audio','link','note'].includes(i.kind)||!Array.isArray(i.tags)||i.tags.some(t=>typeof t!=='string')||!Number.isFinite(i.order)||!Number.isFinite(Date.parse(i.createdAt))||typeof i.collection!=='string'||typeof i.note!=='string'||(i.sourceURL&&!validURL(i.sourceURL))||(i.assetId&&!/^[a-f0-9-]{36}$/i.test(i.assetId)))throw Error('Library metadata is invalid. Writes are disabled.');ids.add(i.id);}
   for(const i of doc.items){if(i.thumbnailId&&!/^[a-f0-9-]{36}$/i.test(i.thumbnailId))throw Error('Invalid thumbnail metadata.');if(!Number.isFinite(Date.parse(i.updatedAt))||(i.trashedAt&&!Number.isFinite(Date.parse(i.trashedAt))))throw Error('Invalid item dates.');}

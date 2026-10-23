@@ -59,3 +59,7 @@ macOS 15 SwiftUI VideoPlayer 曾出现 superclass demangle 崩溃；改为 NSVie
 ## 14. 整理前的依赖审计不能照抄旧结论
 
 本轮 npm ci 后 audit 检出 Vite 8.1.4 开发工具安全公告；核对 [公告的修复版本](https://github.com/advisories/GHSA-587h-7wmj-h5pm)，将同版本线固定升级到 8.1.6，重跑测试、构建和 audit。结果为 0 漏洞，前端构建资源哈希保持一致。没有使用 audit fix --force，也未因此重新部署线上或修改用户数据。日后仍需重新审计，不能把本次 0 漏洞当永久保证。
+
+## 15. Crop safety and asynchronous saves
+
+Store normalized display bounds instead of replacing the image. A dark-edge detector can mistake dark artwork for borders, so suggestions require review. Rename the title independently from fileName and object paths. Browser checks must wait for the saved ratio to render, rather than only waiting for a button click. Reset must restore the original bounds.

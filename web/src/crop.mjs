@@ -1,0 +1,4 @@
+export function fullCrop(w,h){return {x:0,y:0,w:1,h:1,sourceWidth:w,sourceHeight:h};}
+export function fitRatio(c,r){if(!r)return c;const t=r*c.sourceHeight/c.sourceWidth;let w=c.w,h=c.h;if(w/h>t)w=h*t;else h=w/t;return {...c,x:c.x+(c.w-w)/2,y:c.y+(c.h-h)/2,w,h};}
+export function detectEdges(data,w,h){const edge=(row,i)=>{let n=0;const size=row?w:h;for(let j=0;j<size;j++){const k=(row?i*w+j:j*w+i)*4;if(Math.max(data[k],data[k+1],data[k+2])<38)n++;}return n/size>=.93;};let t=0,b=h,l=0,r=w;while(t<h*.3&&edge(true,t))t++;while(b>h*.7&&edge(true,b-1))b--;while(l<w*.2&&edge(false,l))l++;while(r>w*.8&&edge(false,r-1))r--;return {x:l/w,y:t/h,w:(r-l)/w,h:(b-t)/h};}
+export function cropAspect(i){const c=i.crop;return c?`${c.sourceWidth*c.w}/${c.sourceHeight*c.h}`:i.width&&i.height?`${i.width}/${i.height}`:undefined;}
