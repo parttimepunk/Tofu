@@ -1,4 +1,4 @@
-# 当前交接 — 2026-10-23
+# 当前交接 — 2026-10-24
 
 下一位协作者先读 AGENTS.md，再读本文件；不要根据旧安装包或早期设计稿判断当前产品状态。
 
@@ -70,3 +70,13 @@ Crop Image preserves the original and stores a validated normalized optional cro
 ### Publication verification
 
 The user authorized website + GitHub updates. The existing private-config deployment was updated on 2026-10-23. Live-domain crop/rename checks passed (suggestion, save/reload, 4:5, reset and no runtime errors), along with 12 existing UI/playback checks and 5 offline checks. Unit suite: 21 passing. Tests used generated media in isolated browser contexts without signing into the personal account. Public-source privacy scan passed; production configuration remains only in ignored local files/builds. No new backend schema migration or paid service was introduced. Actual iPhone cross-device crop display still requires user acceptance.
+
+## 2026-10-24 — Pre-save import review
+
+Mobile and Mac web file-picker/drop imports now open Review Import before storage. Review title, notes and image crop in one flow; Save to Library / Save & Next commits one item. Cancel discards only pending items. Original bytes are not modified; unsupported preview can Save Original. The account scope is checked before commit; saving blocks cancel and duplicate saves. No cloud/local media writes are performed during preview.
+
+Local checks passed: 21 unit checks and build; mobile + desktop review flow (including zero writes before save, cancellation, multi-item partial confirmation, crop/title/notes persistence); existing 12 UI checks, 9 drop checks and crop/reset regression.
+
+Accepted future direction: link import from Threads and the other requested social platform, with image previews and selection before saving. This extraction feature is not implemented in this release and needs representative links and a feasibility check.
+
+Publication: the import-review correction was deployed to the existing personal site under the prior crop/rename update authorization. Live mobile and desktop review checks passed, along with 5 offline checks. No personal test account was used and no existing media or backend schema was modified. Public source keeps deployment configuration excluded. Actual iPhone and Safari-installed Mac behavior awaits user acceptance; automated viewport checks use isolated Chrome.

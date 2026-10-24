@@ -1,3 +1,4 @@
+import {approveImports} from './import-review-helper.mjs';
 // Browser plugin not available; isolated Playwright with generated fixtures only.
 import {chromium} from 'playwright';
 import {mkdir,readFile} from 'node:fs/promises';
@@ -14,7 +15,7 @@ try{
  const transfer=await page.evaluateHandle(inputs=>{const dt=new DataTransfer();for(const f of inputs)dt.items.add(new File([new Uint8Array(f.bytes)],f.name,{type:f.type}));return dt;},inputs);
  await page.locator('.app').dispatchEvent('dragenter',{dataTransfer:transfer});await page.getByText('Drop into Tofu',{exact:true}).waitFor();
  await page.screenshot({path:'../outputs/Tofu-Drop-Preview.png'});
- await page.locator('.app').dispatchEvent('drop',{dataTransfer:transfer});await page.getByText('3 items saved locally.',{exact:true}).waitFor();
+ await page.locator('.app').dispatchEvent('drop',{dataTransfer:transfer});await page.getByText('Review Import',{exact:true}).waitFor();await approveImports(page);await page.getByText('1 item saved locally.',{exact:true}).waitFor();
  assert.equal(await page.locator('.media-item').count(),3);assert.equal(await page.getByLabel('Media type').inputValue(),'all');
  for(const type of ['image','video','audio']){await page.getByLabel('Media type').selectOption(type);assert.equal(await page.locator('.media-item').count(),1);}
  await page.getByLabel('Media type').selectOption('all');await page.reload();await page.locator('.media-item').nth(2).waitFor();

@@ -63,3 +63,7 @@ macOS 15 SwiftUI VideoPlayer 曾出现 superclass demangle 崩溃；改为 NSVie
 ## 15. Crop safety and asynchronous saves
 
 Store normalized display bounds instead of replacing the image. A dark-edge detector can mistake dark artwork for borders, so suggestions require review. Rename the title independently from fileName and object paths. Browser checks must wait for the saved ratio to render, rather than only waiting for a button click. Reset must restore the original bounds.
+
+## 16. Import review must precede persistence
+
+Do not call importMedia while a selected image is merely being previewed: that function writes original blobs. Review uses temporary object URLs and disposes them on close. Only the explicit Save path imports originals and commits crop/title/notes. Batch cancel must not delete already confirmed items; it must not leave pending originals stored. Block cancel while committing, validate the active account, and propagate errors so a failed save never advances the queue.

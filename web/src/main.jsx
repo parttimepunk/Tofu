@@ -5,7 +5,8 @@ import {emptyDocument,newItem,validURL,moveItem,fromMac,validate,mergeDocuments}
 import {readState,updateState,getFile,putFiles} from './storage.mjs';
 import {cloud,cloudConfigured,synchronize,enableSync,readCloud,mediaURL,keepBoth} from './cloud.mjs';
 import {importMedia} from './media.mjs';
-import {droppedFiles} from './media-types.mjs';
+import ImportReview from './ImportReview.jsx';
+import {describeMedia,droppedFiles} from './media-types.mjs';
 import './style.css';
 import CropEditor,{CroppedImage} from './CropEditor.jsx';
 import {cropAspect} from './crop.mjs';
@@ -34,12 +35,15 @@ function App(){
  useEffect(()=>{if(!state?.enabled)return;const t=setTimeout(sync,1200);return ()=>clearTimeout(t);},[state?.revision]);
  async function mutate(fn){if(fault)throw Error(fault);return updateState(scope,s=>({...s,document:fn(s.document)}));}
  async function edit(id,fields){await mutate(d=>({...d,items:d.items.map(i=>i.id===id?{...i,...fields,updatedAt:new Date().toISOString()}:i)}));}
- async function addFiles(files){
-  if(importLock.current||busy){fail(Error('Please wait for the current operation to finish.'));return;}
-  if(fault||!state){fail(Error(fault||'Your library is still opening. Please try again.'));return;}
+ async function persistFiles(files,fields={}){
+  if(importLock.current||busy)throw Error('Please wait for the current operation to finish.');
+  if(fault||!state)throw Error(fault||'Your library is still opening. Please try again.');
   if(!files.length)return;
   importLock.current=true;setBusy(true);
-  try{const imported=await importMedia(scope,files);await mutate(d=>({...d,items:[...d.items,...imported.map(i=>({...i,collection}))]}));setSelected(null);setTab('Library');setFilter('all');setQuery('');setToast(`${imported.length} ${imported.length===1?'item':'items'} saved locally.`);}catch(e){fail(e);}finally{importLock.current=false;setBusy(false);if(fileInput.current)fileInput.current.value='';}
+  try{const imported=await importMedia(scope,files);await mutate(d=>({...d,items:[...d.items,...imported.map(i=>({...i,collection,...fields}))]}));setSelected(null);setTab('Library');setFilter('all');setQuery('');setToast(`${imported.length} ${imported.length===1?'item':'items'} saved locally.`);}catch(e){fail(e);throw e;}finally{importLock.current=false;setBusy(false);if(fileInput.current)fileInput.current.value='';}
+ }
+ function addFiles(files){
+  try{if(busy||importLock.current)throw Error('Please wait for saving to finish.');if(fault||!state)throw Error(fault||'Your library is still opening.');const list=Array.from(files);list.forEach(describeMedia);if(list.length)setDialog({type:'import',files:list,scope});}catch(e){fail(e);}finally{if(fileInput.current)fileInput.current.value='';}
  }
  function fileDrag(e){return Array.from(e.dataTransfer?.types||[]).includes('Files');}
  function dragEnter(e){if(!fileDrag(e))return;e.preventDefault();dragDepth.current++;setDragging(true);}
@@ -77,8 +81,8 @@ function App(){
  </main>
  <nav className="tabbar" aria-label="Main navigation">{[['Library',Photo],['Collections',Folder],['Search',Search]].map(([name,Icon])=><button key={name} aria-current={tab===name?'page':undefined} onClick={()=>navigate(name)}><Icon size={22}/><span>{name}</span></button>)}</nav>
  <input ref={fileInput} className="hidden" type="file" accept="image/*,video/*,audio/*" multiple onChange={e=>addFiles([...e.target.files])}/><input ref={macInput} className="hidden" type="file" webkitdirectory="" multiple onChange={e=>importMac(e.target.files)}/>
- {dialog&&<dialog ref={modalRef} onCancel={()=>setDialog(null)} onClick={e=>{if(e.target===e.currentTarget)setDialog(null);}}><div className="sheet"><div className="grabber"/><div className="sheet-top"><button className="text-button" onClick={()=>setDialog(null)}>Cancel</button><strong>{({add:'Add to Tofu',edit:'Edit Item',link:'Save to Tofu',note:'New Note',collection:'New Collection',settings:'Settings',auth:'Cloud Account',sync:'Connect Library',rename:'Rename Item',crop:'Crop Image'})[dialog.type]}</strong><span/></div>
- {dialog.type==='crop'?<CropEditor item={dialog.item} scope={scope} onSave={async crop=>{await edit(dialog.item.id,{crop});setDialog(null);}}/>:dialog.type==='rename'?<RenameForm item={dialog.item} onSave={async title=>{await edit(dialog.item.id,{title});setDialog(null);}}/>:dialog.type==='add'?<div className="action-list"><button onClick={()=>{setDialog(null);fileInput.current.click();}}><Photo/>Photos & Files<ChevronRight/></button><button onClick={()=>setDialog({type:'link'})}><Link/>Save Link<ChevronRight/></button><button onClick={()=>setDialog({type:'note'})}><StickyNote/>New Note<ChevronRight/></button><p>Files are copied into your library. Originals stay unchanged.</p></div>:
+ {dialog&&<dialog ref={modalRef} onCancel={e=>{if(busy)e.preventDefault();else setDialog(null);}} onClick={e=>{if(e.target===e.currentTarget&&!busy)setDialog(null);}}><div className="sheet"><div className="grabber"/><div className="sheet-top"><button className="text-button" disabled={busy} onClick={()=>setDialog(null)}>Cancel</button><strong>{({add:'Add to Tofu',edit:'Edit Item',link:'Save to Tofu',note:'New Note',collection:'New Collection',settings:'Settings',auth:'Cloud Account',sync:'Connect Library',rename:'Rename Item',crop:'Crop Image',import:'Review Import'})[dialog.type]}</strong><span/></div>
+ {dialog.type==='import'?<ImportReview files={dialog.files} onDone={()=>setDialog(null)} onSave={async(file,fields)=>{if(activeScope.current!==dialog.scope)throw Error('The account changed. Cancel and choose the files again.');await persistFiles([file],fields);}}/>:dialog.type==='crop'?<CropEditor item={dialog.item} scope={scope} onSave={async crop=>{await edit(dialog.item.id,{crop});setDialog(null);}}/>:dialog.type==='rename'?<RenameForm item={dialog.item} onSave={async title=>{await edit(dialog.item.id,{title});setDialog(null);}}/>:dialog.type==='add'?<div className="action-list"><button onClick={()=>{setDialog(null);fileInput.current.click();}}><Photo/>Photos & Files<ChevronRight/></button><button onClick={()=>setDialog({type:'link'})}><Link/>Save Link<ChevronRight/></button><button onClick={()=>setDialog({type:'note'})}><StickyNote/>New Note<ChevronRight/></button><p>Files are copied into your library. Originals stay unchanged.</p></div>:
  ['edit','link','note'].includes(dialog.type)?<ItemForm item={dialog.item||newItem(dialog.type==='link'?'link':'note',{collection})} collections={collectionNames} onSave={async edited=>{try{if(dialog.type==='edit')await edit(edited.id,edited);else await mutate(d=>({...d,items:[...d.items,edited],collections:[...new Set([...d.collections,edited.collection].filter(Boolean))]}));setDialog(null);}catch(e){fail(e);}}}/>:
  dialog.type==='collection'?<CollectionForm onSave={async name=>{try{await mutate(d=>({...d,collections:[...new Set([...d.collections,name])]}));setDialog(null);navigate('Collections');setCollection(name);}catch(e){fail(e);}}}/>:
  dialog.type==='auth'?<Auth onDone={()=>setDialog({type:'settings'})} onError={fail}/>:

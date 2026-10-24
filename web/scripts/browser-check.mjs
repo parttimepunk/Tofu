@@ -1,3 +1,4 @@
+import {approveImports} from './import-review-helper.mjs';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -13,7 +14,7 @@ try{
  await page.goto(process.env.TOFU_TEST_URL||'http://127.0.0.1:5180/');
  await page.getByText('Your space for inspiration',{exact:true}).waitFor();
  const names=['Type and Space.png','Light Study.mp4','Shape Study.png','Typography Study.png','Soft Tone.wav'];
- await page.locator('input[type=file]').first().setInputFiles(names.map(n=>path.join(fixtures,n)));
+ await page.locator('input[type=file]').first().setInputFiles(names.map(n=>path.join(fixtures,n)));await page.getByText('Review Import',{exact:true}).waitFor();await approveImports(page);
  await page.getByRole('button',{name:'Type and Space Type and Space PNG image',exact:true}).waitFor();
  await page.waitForFunction(()=>!document.querySelector('.media-loading')&&[...document.images].every(i=>i.complete)&&[...document.querySelectorAll('video')].every(v=>v.readyState>=1));
  checks.push('Images, video and audio imported through the file input.');
