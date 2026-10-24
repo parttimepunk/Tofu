@@ -74,3 +74,7 @@ Do not call importMedia while a selected image is merely being previewed: that f
 - CDN 地址会过期，需及时预览。单图代理限 3 MiB，失败不悄悄保存半套。真实链接/token/素材不进入公开测试。
 - Vite configureServer/configurePreviewServer 不要返回 Connect app，否则会被当后置钩子调用并导致启动异常。
 - 本地处理器、模拟 API 和真实图片读取不能替代线上函数打包、授权调用、Safari 书签及手机验收。发布清单已不再只有静态资源。
+
+## Link import errors must preserve the failing stage
+
+Safari “Load failed” alone does not identify the failing network hop. Inspect server request status and retry UI without collecting session credentials. Validate redirects before fetching, but explain a platform login/unavailable-page redirect as platform access failure rather than telling the user to replace a valid post link. Keep sign-in and same-origin transport errors separate, and do not automatically show bookmark code for unrelated network failures.

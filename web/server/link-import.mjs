@@ -1,8 +1,11 @@
 const PAGE_HOSTS=new Set(['www.xiaohongshu.com','xiaohongshu.com','xhslink.com']);
 export function checkedURL(value,kind='page'){
  let u;try{u=new URL(value);}catch{throw Error('Enter a complete HTTPS post link.');}
- if(u.protocol!=='https:'||u.port||u.username||u.password)throw Error('Only supported HTTPS links are accepted.');
  const media=/^sns-(webpic|img)-(qc|hw|bd|qn)\.xhscdn\.com$/.test(u.hostname)||u.hostname==='ci.xiaohongshu.com';
+ // Some public page metadata lists HTTP CDN images even though HTTPS is available.
+ // Upgrade only these exact allowlisted image hosts; never fetch plaintext HTTP.
+ if(kind==='image'&&media&&u.protocol==='http:')u.protocol='https:';
+ if(u.protocol!=='https:'||u.port||u.username||u.password)throw Error('Only supported HTTPS links are accepted.');
  if(kind==='image'?!media:!PAGE_HOSTS.has(u.hostname))throw Error(kind==='image'?'Unsupported image host.':'Currently supported: Xiaohongshu post links.');
  if(kind==='page'&&u.hostname!=='xhslink.com'&&!/^\/(explore|discovery\/item)\/[a-f0-9]{24}\/?$/.test(u.pathname))throw Error('Use a specific Xiaohongshu post link.');
  u.hash='';return u.href;
@@ -16,7 +19,7 @@ export async function readLimited(response,max){
 export async function fetchAllowed(url,kind,fetcher=fetch){
  for(let i=0;i<4;i++){
   url=checkedURL(url,kind);const response=await fetcher(url,{redirect:'manual',signal:AbortSignal.timeout(15000),headers:{'User-Agent':'Mozilla/5.0','Accept':kind==='image'?'image/*':'text/html'}});
-  if([301,302,303,307,308].includes(response.status)){const next=response.headers.get('location');if(!next)throw Error('Post redirect failed.');await response.body?.cancel();url=new URL(next,url).href;continue;}
+  if([301,302,303,307,308].includes(response.status)){const next=response.headers.get('location');if(!next)throw Error('Post redirect failed.');await response.body?.cancel();try{url=checkedURL(new URL(next,url).href,kind);}catch{throw Error(kind==='page'?'The platform redirected away from the post. Open the post in your signed-in browser and use Collect from Page.':'The image redirected to an unsupported host.');}continue;}
   if(!response.ok)throw Error('The platform did not allow access. Open the post in your browser and use Collect from Page.');
   return {response,url};
  }
@@ -38,7 +41,7 @@ export function extractPost(html,sourceURL){
 export function createHandler({supabaseURL='',publishableKey='',fetcher=fetch}={}){return async function(request){
  const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
  if(request.method!=='POST')return Response.json({error:'Use POST.'},{status:405,headers});
- try{
+ let stage='auth';try{
   if(!supabaseURL||!publishableKey)return Response.json({error:'Link import requires a configured cloud account on this installation.'},{status:503,headers});
   const bearer=request.headers.get('authorization')||'';if(!/^Bearer [A-Za-z0-9_.-]+$/.test(bearer))return Response.json({error:'Sign in to import images from a link.'},{status:401,headers});
   const auth=await fetcher(new URL('/auth/v1/user',supabaseURL),{headers:{apikey:publishableKey,Authorization:bearer},signal:AbortSignal.timeout(10000)});
@@ -46,14 +49,16 @@ export function createHandler({supabaseURL='',publishableKey='',fetcher=fetch}={
   await auth.body?.cancel();
   let body;try{body=JSON.parse(new TextDecoder().decode(await readLimited(request,32768)));}catch{throw Error('Invalid import request.');}
   if(body.action==='images'){
+   stage='page';
    const url=checkedURL(body.url);const {response,url:finalURL}=await fetchAllowed(url,'page',fetcher);const html=new TextDecoder().decode(await readLimited(response,3000000));
    return Response.json(extractPost(html,finalURL),{headers});
   }
   if(body.action==='image'){
+   stage='image';
    const {response}=await fetchAllowed(body.url,'image',fetcher),mime=(response.headers.get('content-type')||'').split(';')[0];
    if(!['image/jpeg','image/png','image/webp','image/avif','image/gif'].includes(mime))throw Error('The source did not return a supported image.');
    const bytes=await readLimited(response,3*1024*1024);return new Response(bytes,{headers:{...headers,'Content-Type':mime}});
   }
   throw Error('Unsupported import request.');
- }catch(e){return Response.json({error:e.name==='TimeoutError'?'The platform timed out. Please try again or collect from the open page.':e.message||'Import failed. No images were saved.'},{status:422,headers});}
+ }catch(e){const network=e.name==='TypeError'||/^(Load failed|fetch failed|Failed to fetch)$/i.test(e.message||'');const timeout=e.name==='TimeoutError';const error=stage==='auth'&&(network||timeout)?'Could not verify your Tofu sign-in. Check your connection and try again.':timeout?'The platform timed out. Please try again or collect from the open page.':network?'The platform could not be reached. Try again or use Collect from Page in your signed-in browser.':e.message||'Import failed. No images were saved.';return Response.json({error,code:stage==='auth'?'AUTH_UNAVAILABLE':stage==='page'?'POST_UNAVAILABLE':'IMAGE_UNAVAILABLE'},{status:422,headers});}
 };}
