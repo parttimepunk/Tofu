@@ -14,6 +14,10 @@ self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.me
 if(e.request.mode==='navigate'){e.respondWith(fetch(e.request).then(r=>r.ok?r:caches.match('/index.html')).catch(()=>caches.match('/index.html')));return;}
 if(FILES.includes(u.pathname))e.respondWith(caches.match(e.request,{ignoreVary:true}).then(r=>r||fetch(e.request)));});`);
 const config={headers:[{source:'/(.*)',headers:[{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'no-referrer'},{key:'X-Frame-Options',value:'DENY'},{key:'X-Robots-Tag',value:'noindex, nofollow'},{key:'Content-Security-Policy',value:`default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: ${backend}; media-src 'self' blob: ${backend}; connect-src 'self' ${backend} ${websocket}; object-src 'none'; base-uri 'self'; frame-ancestors 'none'`}]},{source:'/sw.js',headers:[{key:'Cache-Control',value:'no-cache'}]}]};
+if(process.env.TOFU_SAFARI_SHORTCUT_PATH){
+ await copyFile(process.env.TOFU_SAFARI_SHORTCUT_PATH,'dist/Save-to-Tofu.shortcut');
+ config.headers.push({source:'/Save-to-Tofu.shortcut',headers:[{key:'Content-Type',value:'application/octet-stream'},{key:'Content-Disposition',value:'attachment; filename="Save to Tofu.shortcut"'},{key:'Cache-Control',value:'no-cache'}]});
+}
 await writeFile('dist/vercel.json',JSON.stringify(config,null,2));
 console.log('Offline shell:',id,'Files:',files.length);
 

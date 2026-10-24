@@ -78,3 +78,10 @@ Do not call importMedia while a selected image is merely being previewed: that f
 ## Link import errors must preserve the failing stage
 
 Safari “Load failed” alone does not identify the failing network hop. Inspect server request status and retry UI without collecting session credentials. Validate redirects before fetching, but explain a platform login/unavailable-page redirect as platform access failure rather than telling the user to replace a valid post link. Keep sign-in and same-origin transport errors separate, and do not automatically show bookmark code for unrelated network failures.
+
+## Safari 分享快捷指令
+
+- Run JavaScript on Webpage 的输入必须是 Safari 网页，不能拿小红书 App 分享的纯 URL 冒充已登录页面。Safari 页面可能跳 App 或不含完整图集；数量无法验证就停止。
+- 失败时应抛出异常让快捷指令停止；completion({error: ...}) 只是普通字典，会被后续 Open URLs 误处理。
+- 签名成功、导入预览识别动作、模拟手机尺寸的浏览器测试都不等于 iPhone 真机验收。系统脚本权限需用户自行选择，不能静默打开。
+- 手机 Safari 与主屏幕 PWA 的会话/库可能独立，预览登录后保留本次 capture；要让保存进入已有同步库，还需用户在 Safari 连接同一账号库。

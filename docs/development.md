@@ -77,3 +77,17 @@ API 为 `web/api/import-link.mjs` + `web/server/link-import.mjs`，Vite dev/prev
 匿名读取失败时，Mac 的 Collect from Page 提供书签代码。在已登录、打开的帖子中由用户点击，只收集标题、来源、图片地址，并要求图片数匹配可见页码。它不读 Cookie、localStorage 或后台状态。结果放 URL fragment，进入 Tofu 后立即清除；来源可能保留平台访问参数，分享前请留意。图片懒加载不全时会停止并提示浏览全部图片后再试。真实 Safari 书签操作、iPhone 操作尚未验收，不能承诺手机只贴链接就成功。
 
 检查：`npm test && npm run build`；保持 `npm run dev -- --port 5188`，运行 `node scripts/link-images-check.mjs`。该脚本使用合成登录/API，验证 5 张预览、选 2 张、保存前编辑、来源及失败反馈，不能当作真实平台匿名提取证据。真实链接、访问参数、页面捕获和第三方素材只放忽略的 work/outputs。
+
+## Safari 分享快捷指令（试用）
+
+生成器 web/scripts/make-safari-shortcut.mjs 只接收使用者自己的 HTTPS Tofu origin，不内置作者域名或账号。输出 JSON 到忽略的 work/，用系统 plistlib 转成 XML plist，再通过 macOS shortcuts sign --mode anyone --input ... --output ... 签名；源码模板可公开，含个人部署地址的生成文件不能提交 Git。
+
+构建时可设置 TOFU_SAFARI_SHORTCUT_PATH 为已签名文件的绝对路径，build-sw 将其复制到 dist/Save-to-Tofu.shortcut 并设置下载文件名。没有该变量时不发布下载文件，也不改变静态资源数量。带此文件的发布清单为 13 个文件。快捷指令不会加入离线程序壳缓存。
+
+快捷指令仅显示在 Safari 网页的分享表单，读取 DOM 中的帖子标题、来源及图片地址，核对图片数与页面计数一致后把结果通过 URL fragment 交给 Tofu。片段到达后清除。失败由快捷指令显示错误并停止，不把错误文本当 URL 打开。它不读取 Cookie、账号密码或平台后台状态，也不自动保存图片。
+
+使用：iPhone Safari 下载签名文件，在“文件 → 下载项”打开并添加；若系统提示脚本关闭，由用户自己在“设置 → 快捷指令（部分系统在 App 内）→ 高级 → 允许运行脚本”选择开启。系统首次会要求网页访问授权。此操作扩大快捷指令读取网页的能力，不能由代理静默更改。见 [Apple 说明](https://support.apple.com/guide/shortcuts/apdfeb05586f/ios)。
+
+日常：Safari 打开完整帖子（必要时登录）→ 分享 → Save to Tofu → 勾选 → Review → 裁剪/命名/Save。不是从小红书 App 分享一条 URL；Safari 网页若无图片或计数不完整，会停止。Safari 与主屏幕安装版的登录/本地存储可能独立，需要登录同一 Tofu 账号并在设置中连接账号库，不能承诺自动打开主屏幕版本。
+
+验证：npm test 覆盖分享脚本与快捷指令连接结构；node scripts/safari-share-check.mjs 验证未登录时保留收集结果、登录后预览、来源/标题预填及取消零保存。全部使用合成账号/图片并拦截云端请求。macOS 的签名成功和导入动作预览不能替代真实 iPhone 网页/分享表单运行验收。

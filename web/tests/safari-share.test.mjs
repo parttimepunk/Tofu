@@ -1,0 +1,12 @@
+import test from 'node:test';import assert from 'node:assert/strict';import vm from 'node:vm';
+import {safariShareSource} from '../src/safari-share.mjs';
+import {makeSafariShortcut} from '../scripts/make-safari-shortcut.mjs';
+function run({mobile=false,total=5,count=5,host='www.xiaohongshu.com',lazy=false}={}){
+ let result;const root={innerText:mobile?'':`1/${total}`,querySelector:s=>mobile?{textContent:String(total)}:null,querySelectorAll:()=>Array.from({length:count},(_,i)=>({currentSrc:lazy?'data:image/gif;base64,AAAA':`https://sns-webpic-qc.xhscdn.com/spectrum/${i}`,getAttribute:n=>n==='data-src'?`http://sns-webpic-qc.xhscdn.com/spectrum/${i}`:null}))};
+ const document={getElementById:n=>!mobile&&n==='noteContainer'?root:n==='detail-title'?{textContent:'Test gallery'}:null,querySelector:()=>mobile?root:null};Object.defineProperty(document,'cookie',{get(){throw Error('Do not read cookies');}});
+ vm.runInNewContext(safariShareSource('https://tofu.example'),{URL,document,location:{href:`https://${host}/explore/aaaaaaaaaaaaaaaaaaaaaaaa`},completion:x=>{result=x;}});return JSON.parse(decodeURIComponent(result.split('#collect=')[1]));
+}
+test('Safari share script completes once with the post fields only',()=>{const r=run();assert.equal(r.images.length,5);assert.deepEqual(Object.keys(r).sort(),['images','sourceURL','title','total']);});
+test('mobile pagination and lazy DOM image attributes are supported',()=>{const r=run({mobile:true,lazy:true,host:'m.xiaohongshu.com'});assert.equal(r.total,5);assert.ok(r.images.every(x=>x.startsWith('https:')));});
+test('incomplete or unrelated pages stop rather than returning partial images',()=>{assert.throws(()=>run({count:2}),/Not all post images/);assert.throws(()=>run({host:'example.com'}),/full Xiaohongshu post/);});
+test('shortcut is Safari-share only and wires output into Open URLs',()=>{const s=makeSafariShortcut('https://tofu.example');assert.deepEqual(s.WFWorkflowTypes,['ActionExtension']);assert.deepEqual(s.WFWorkflowInputContentItemClasses,['WFSafariWebPageContentItem']);const js=s.WFWorkflowActions[1],open=s.WFWorkflowActions[2];assert.equal(js.WFWorkflowActionParameters.WFInput.Value.Type,'ExtensionInput');assert.equal(open.WFWorkflowActionParameters.WFInput.Value.OutputUUID,js.WFWorkflowActionParameters.UUID);assert.equal(open.WFWorkflowActionIdentifier,'is.workflow.actions.openurl');assert.throws(()=>makeSafariShortcut('http://tofu.example'));});
