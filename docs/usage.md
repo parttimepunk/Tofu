@@ -51,3 +51,5 @@ macOS 14+ Safari 打开同一网址 → 文件（繁体“檔案”）→ 添加
 ## 保存前整理（手机和 Mac 网页版）
 
 选图或拖入文件后先进入 Review Import，不再立即添加到素材库。填写 Title / Notes；图片可直接选比例、手动调整或尝试去黑边，然后 Save to Library。多项使用 Save & Next 逐项确认。Cancel 只丢弃尚未确认的剩余项目，已保存的保留。未确认素材只在内存中预览，不写本地文件库或上传云端。原图仍保留。不能预览的格式可选择 Save Original，之后再处理。旧原生 Mac 本地版不包含此网页更新。
+
+导入确认页的 Source link (optional) 可填写原帖或网站的 http/https 链接，也可留空。保存后在详情的 Source 入口打开；已有素材可从 Edit 修改。该字段仅记录来源，不会自动提取网页图片。

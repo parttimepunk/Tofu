@@ -80,3 +80,9 @@ Local checks passed: 21 unit checks and build; mobile + desktop review flow (inc
 Accepted future direction: link import from Threads and the other requested social platform, with image previews and selection before saving. This extraction feature is not implemented in this release and needs representative links and a feasibility check.
 
 Publication: the import-review correction was deployed to the existing personal site under the prior crop/rename update authorization. Live mobile and desktop review checks passed, along with 5 offline checks. No personal test account was used and no existing media or backend schema was modified. Public source keeps deployment configuration excluded. Actual iPhone and Safari-installed Mac behavior awaits user acceptance; automated viewport checks use isolated Chrome.
+
+### Optional import source link — 2026-10-24
+
+Review Import now includes Source link (optional) for image/video/audio imports, reusing sourceURL metadata and the existing Source detail link. Blank input is accepted; non-http(s) values are rejected before any storage write; surrounding whitespace is removed. No content extraction, schema change or backend service is introduced.
+
+Verification/publication: 21 unit checks and production build passed; mobile and desktop import-review checks passed both locally and on the existing live site, including blank links, unsafe-link rejection without file writes, saved links after reload, and cancellation. Validation messages clear when correcting input. Public-source scan passed. The source-link refinement was deployed within the ongoing import-review update scope; no private test account or cloud data was used.
