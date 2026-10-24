@@ -67,3 +67,10 @@ Store normalized display bounds instead of replacing the image. A dark-edge dete
 ## 16. Import review must precede persistence
 
 Do not call importMedia while a selected image is merely being previewed: that function writes original blobs. Review uses temporary object URLs and disposes them on close. Only the explicit Save path imports originals and commits crop/title/notes. Batch cancel must not delete already confirmed items; it must not leave pending originals stored. Block cancel while committing, validate the active account, and propagate errors so a failed save never advances the queue.
+# 小红书链接导入：新增记录（2026-10-24）
+
+- 已登录浏览器能打开，不代表匿名服务器能读到图片。HTTP 200 可能只有页面框架；不能把封面或 og:image 当作整篇。
+- 页面包含懒加载、重复轮播图、头像与评论图。收集限定帖子容器和内容 CDN、去重，并要求数量等于可见页码总数；不匹配就停止。平台改版可能使书签失效。
+- CDN 地址会过期，需及时预览。单图代理限 3 MiB，失败不悄悄保存半套。真实链接/token/素材不进入公开测试。
+- Vite configureServer/configurePreviewServer 不要返回 Connect app，否则会被当后置钩子调用并导致启动异常。
+- 本地处理器、模拟 API 和真实图片读取不能替代线上函数打包、授权调用、Safari 书签及手机验收。发布清单已不再只有静态资源。

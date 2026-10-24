@@ -1,4 +1,4 @@
-import {readdir,readFile,writeFile} from 'node:fs/promises';
+import {readdir,readFile,writeFile,mkdir,copyFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {loadEnv} from 'vite';
 const env=loadEnv('production',process.cwd(),'VITE_');
@@ -16,3 +16,8 @@ if(FILES.includes(u.pathname))e.respondWith(caches.match(e.request,{ignoreVary:t
 const config={headers:[{source:'/(.*)',headers:[{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'no-referrer'},{key:'X-Frame-Options',value:'DENY'},{key:'X-Robots-Tag',value:'noindex, nofollow'},{key:'Content-Security-Policy',value:`default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: ${backend}; media-src 'self' blob: ${backend}; connect-src 'self' ${backend} ${websocket}; object-src 'none'; base-uri 'self'; frame-ancestors 'none'`}]},{source:'/sw.js',headers:[{key:'Cache-Control',value:'no-cache'}]}]};
 await writeFile('dist/vercel.json',JSON.stringify(config,null,2));
 console.log('Offline shell:',id,'Files:',files.length);
+
+// Server runtime uses only public project configuration, never admin credentials.
+await mkdir('dist/api',{recursive:true});await mkdir('dist/server',{recursive:true});
+await copyFile('server/link-import.mjs','dist/server/link-import.mjs');
+await writeFile('dist/api/import-link.mjs',"import {createHandler} from '../server/link-import.mjs';\nexport default {fetch:createHandler("+JSON.stringify({supabaseURL:env.VITE_SUPABASE_URL||'',publishableKey:env.VITE_SUPABASE_PUBLISHABLE_KEY||''})+")};\n");

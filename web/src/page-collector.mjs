@@ -1,0 +1,5 @@
+// Runs only when the user clicks a bookmark on an already-open supported post.
+export function collectorSource(destination){
+ const target=JSON.stringify(destination);
+ return `javascript:(()=>{if(!/(^|\\.)xiaohongshu\\.com$/.test(location.hostname)){alert('Open a Xiaohongshu post first.');return;}const root=document.getElementById('noteContainer')||document.querySelector('.note-container');if(!root){alert('Open the full post first.');return;}const images=[...new Set([...root.querySelectorAll('img')].map(i=>i.currentSrc||i.src).filter(s=>/^https:\\/\\/sns-webpic-(qc|hw|bd|qn)\\.xhscdn\\.com\\//.test(s)&&!s.includes('/comment/')))];const fraction=root.innerText.match(/(?:^|\\s)\\d+\\s*\\/\\s*(\\d+)(?:\\s|$)/);if(!images.length||!fraction||images.length!==Number(fraction[1])){alert('Could not verify all post images. Browse all slides and try again.');return;}const payload={title:document.getElementById('detail-title')?.textContent||'Untitled post',sourceURL:location.href,images,total:images.length};location.href=${target}+'/#collect='+encodeURIComponent(JSON.stringify(payload));})();`;
+}

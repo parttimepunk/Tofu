@@ -13,3 +13,5 @@
 .import-review-hint{padding:14px 20px 0;color:var(--muted);font-size:13px;line-height:1.5}.import-skip{display:block;margin:0 auto 20px}.crop-editor>label:first-of-type input{width:100%}
 
 .crop-adjustments summary{cursor:pointer;color:var(--accent);padding:10px 0}.crop-adjustments label{display:grid;gap:8px;margin:10px 0}.crop-adjustments[open]{padding-bottom:5px}
+
+.link-image-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.link-image-grid img{width:100%;height:160px;object-fit:contain;background:var(--surface);border-radius:6px}.link-image-grid label>span{display:flex;align-items:center;gap:6px}.link-image-grid input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
