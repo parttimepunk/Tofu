@@ -18,6 +18,10 @@ if(process.env.TOFU_SAFARI_SHORTCUT_PATH){
  await copyFile(process.env.TOFU_SAFARI_SHORTCUT_PATH,'dist/Save-to-Tofu.shortcut');
  config.headers.push({source:'/Save-to-Tofu.shortcut',headers:[{key:'Content-Type',value:'application/octet-stream'},{key:'Content-Disposition',value:'attachment; filename="Save to Tofu.shortcut"'},{key:'Cache-Control',value:'no-cache'}]});
 }
+if(process.env.TOFU_COLLECTOR_ZIP_PATH){
+ await copyFile(process.env.TOFU_COLLECTOR_ZIP_PATH,'dist/Tofu-Collector.zip');
+ config.headers.push({source:'/Tofu-Collector.zip',headers:[{key:'Content-Type',value:'application/zip'},{key:'Content-Disposition',value:'attachment; filename="Tofu-Collector.zip"'},{key:'Cache-Control',value:'no-cache'}]});
+}
 await writeFile('dist/vercel.json',JSON.stringify(config,null,2));
 console.log('Offline shell:',id,'Files:',files.length);
 

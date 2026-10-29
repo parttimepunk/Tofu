@@ -91,3 +91,11 @@ API 为 `web/api/import-link.mjs` + `web/server/link-import.mjs`，Vite dev/prev
 日常：Safari 打开完整帖子（必要时登录）→ 分享 → Save to Tofu → 勾选 → Review → 裁剪/命名/Save。不是从小红书 App 分享一条 URL；Safari 网页若无图片或计数不完整，会停止。Safari 与主屏幕安装版的登录/本地存储可能独立，需要登录同一 Tofu 账号并在设置中连接账号库，不能承诺自动打开主屏幕版本。
 
 验证：npm test 覆盖分享脚本与快捷指令连接结构；node scripts/safari-share-check.mjs 验证未登录时保留收集结果、登录后预览、来源/标题预填及取消零保存。全部使用合成账号/图片并拦截云端请求。macOS 的签名成功和导入动作预览不能替代真实 iPhone 网页/分享表单运行验收。
+
+## 桌面浏览器扩展
+
+见 [extension/README.md](../extension/README.md)。生成器 extension/build.mjs 复用 DOM 采集器，要求调用者传入自己的 HTTPS Tofu origin；生成的配置与安装包不得放入公开 Git。正式 Chrome/Edge 已移除相关命令行侧载开关，因此自动验证使用 Playwright 配套的 Chrome for Testing 和独立 profile。Browser plugin not available。实际 Dia 安装及权限授予要由用户确认后进行，不将 Chromium 隔离检查写成真实 Dia 验收。
+
+构建时 VITE_TOFU_COLLECTOR_AVAILABLE=true 才显示下载入口；TOFU_COLLECTOR_ZIP_PATH 指向本机已准备的安装 zip，build-sw 将它复制至 dist/Tofu-Collector.zip 并设置附件下载头。两个变量应一起设置。和手机快捷指令同时发布时清单为 14 个文件，缺少包不能显示下载按钮。普通源码构建不附作者安装包。
+
+主流程：Tofu/Images from Link → Open & Collect → 帖子完整 DOM → 原 Tofu 标签页的图片勾选 → Review Import → 确认保存。取消/关闭等待页面会撤销待办任务。工具栏可直接收集当前帖子到新 Tofu 标签页。已打开的帖子仍需可正常显示；验证、未加载完整图片或平台改版可能阻止收集。扩展不保证图片是最高分辨率，也不绕过平台限制。

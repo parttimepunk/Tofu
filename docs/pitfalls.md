@@ -85,3 +85,14 @@ Safari “Load failed” alone does not identify the failing network hop. Inspec
 - 失败时应抛出异常让快捷指令停止；completion({error: ...}) 只是普通字典，会被后续 Open URLs 误处理。
 - 签名成功、导入预览识别动作、模拟手机尺寸的浏览器测试都不等于 iPhone 真机验收。系统脚本权限需用户自行选择，不能静默打开。
 - 手机 Safari 与主屏幕 PWA 的会话/库可能独立，预览登录后保留本次 capture；要让保存进入已有同步库，还需用户在 Safari 连接同一账号库。
+
+## 扩展自动收集的时序与安全
+
+- 先在 storage.session 记录新标签任务，再导航到帖子；不要等页面开始读取后才保存任务，否则快速页面拿不到 job。
+- 回传必须同时检查配置的 Tofu origin、顶层 frame、任务 tab、帖子 ID、完整图片数和允许的图片域名；不接受跨站/iframe创建任务。未保存前始终是预览。
+- ToFu 取消收集要等后台删除任务的确认；关闭界面也要撤销。旧任务不能误交给新的等待界面。
+- 工具栏和自动回传的 capture 也要保留过登录流程，不只支持 URL fragment 的 Safari 入口。
+- Playwright closed-shadow host 的外框可能是零大小，但浮层内部仍能显示；等待 host attached，另以截图检查视觉，不能误认为浮层没加载。
+- 普通 Chrome/Edge 的命令行侧载方式已不可用；使用官方配套测试浏览器，不能动用户日常 profile。隔离脚本的导航路由/服务 worker 应实测，不以构建成功代替。
+
+- Dia 的原生 AX/截图可能暂时滞后于实际网页状态。本次原生树停在 Loading image 1，但后台五次响应已完成；核对浏览器连接中同一标签的 DOM 后，五张图均已加载。浏览器连接可能以 Chromium 引擎名显示，需要核对标签 ID/网址确认是同一 Dia 页面，而不是凭引擎名假定另一个浏览器。
