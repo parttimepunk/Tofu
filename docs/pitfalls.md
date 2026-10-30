@@ -96,3 +96,7 @@ Safari “Load failed” alone does not identify the failing network hop. Inspec
 - 普通 Chrome/Edge 的命令行侧载方式已不可用；使用官方配套测试浏览器，不能动用户日常 profile。隔离脚本的导航路由/服务 worker 应实测，不以构建成功代替。
 
 - Dia 的原生 AX/截图可能暂时滞后于实际网页状态。本次原生树停在 Loading image 1，但后台五次响应已完成；核对浏览器连接中同一标签的 DOM 后，五张图均已加载。浏览器连接可能以 Chromium 引擎名显示，需要核对标签 ID/网址确认是同一 Dia 页面，而不是凭引擎名假定另一个浏览器。
+
+### 选中标题时误取消导入 — 2026-10-30
+
+`dialog` 上仅判断 `click.target === click.currentTarget` 不足以证明点击从背景开始：在输入框按下、拖动选中文字到弹窗外再松手，click 的共同祖先可能就是 dialog，从而误关闭 Review Import 并丢弃未保存草稿。本次已禁止导入弹窗的背景点击取消，保留 Cancel/Escape；测试必须包含真实 mouse down → move → up，单纯 fill() 无法发现。其他弹窗的背景取消行为未改。
