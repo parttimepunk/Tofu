@@ -100,3 +100,7 @@ Safari “Load failed” alone does not identify the failing network hop. Inspec
 ### 选中标题时误取消导入 — 2026-10-30
 
 `dialog` 上仅判断 `click.target === click.currentTarget` 不足以证明点击从背景开始：在输入框按下、拖动选中文字到弹窗外再松手，click 的共同祖先可能就是 dialog，从而误关闭 Review Import 并丢弃未保存草稿。本次已禁止导入弹窗的背景点击取消，保留 Cancel/Escape；测试必须包含真实 mouse down → move → up，单纯 fill() 无法发现。其他弹窗的背景取消行为未改。
+
+### Import cancellation needs an explicit boundary
+
+Backdrop click handling alone is not the full dialog dismissal contract. Review Import now prevents native cancel events and declares closedby=none; Escape must keep the draft as well. Verify the installed Safari app, not only Chromium. A CUA action rejected because the user changed the UI must be retried from fresh state before claiming refresh completed; without bundle-level evidence, do not assume the installed app loaded the release. Native acceptance on this fix verified both outside clicks and Escape retained an edited generated-image draft, then explicit Cancel cleaned it without saving.
