@@ -1,4 +1,5 @@
 export async function approveImports(page){
+ if(await page.getByLabel('Import as',{exact:true}).count())await page.getByLabel('Import as',{exact:true}).selectOption('separate');
  while(await page.getByText('Review Import',{exact:true}).isVisible()){
   const progress=await page.locator('dialog small').filter({hasText:/^Item \d+ of/}).first().innerText();
   await page.getByRole('button',{name:/^(Save & Next|Save to Library|Save Original)$/}).click();

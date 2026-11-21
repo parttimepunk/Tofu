@@ -108,3 +108,9 @@ Backdrop click handling alone is not the full dialog dismissal contract. Review 
 ## 导入期间目标素材库变化
 
 现象：保存时显示账号变化，重复点击无效。目标校验应保留，不能为恢复保存而去掉账号隔离。导入确认页须提供显式重新确认当前库的入口，保留选图、标题、备注和裁剪；同账号令牌刷新不应当作换账号。真实触发来源须与本地模拟测试区别记录。
+
+## 图集同步不能只处理封面
+
+顶层 assetId/thumbnailId 只表示封面。上传、首次复制未登录本地库、已知文件去重均须通过 mediaIds 遍历 gallery.images，否则当前设备看似完整，另一设备只能打开首图。用两套隔离 IndexedDB 与模拟后台验证每张原图可读，而非仅断言图片数量。
+
+首图裁剪时，顶层 crop 与 gallery.images[0].crop 必须同时更新；其他页裁剪不应改变封面。未知图集版本/损坏元数据禁写，保留原件。

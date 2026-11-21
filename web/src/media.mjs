@@ -2,7 +2,7 @@ import {newItem} from './model.mjs';
 import {describeMedia} from './media-types.mjs';
 import {putFiles} from './storage.mjs';
 export async function importMedia(scope,files){
- const items=[];
+ const items=[],staged=[];
  const batch=Array.from(files).map(file=>({file,...describeMedia(file)}));
  for(const entry of batch){
   const {kind,mime}=entry;
@@ -20,7 +20,7 @@ export async function importMedia(scope,files){
     if(kind==='video'){i.width=media.videoWidth;i.height=media.videoHeight;}
    }catch{/* Unsupported metadata never discards the original file. */}finally{media.removeAttribute('src');media.load();URL.revokeObjectURL(url);}
   }
-  await putFiles(entries);items.push(i);
+  staged.push(...entries);items.push(i);
  }
- return items;
+ await putFiles(staged);return items;
 }

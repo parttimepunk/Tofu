@@ -99,3 +99,15 @@ API 为 `web/api/import-link.mjs` + `web/server/link-import.mjs`，Vite dev/prev
 构建时 VITE_TOFU_COLLECTOR_AVAILABLE=true 才显示下载入口；TOFU_COLLECTOR_ZIP_PATH 指向本机已准备的安装 zip，build-sw 将它复制至 dist/Tofu-Collector.zip 并设置附件下载头。两个变量应一起设置。和手机快捷指令同时发布时清单为 14 个文件，缺少包不能显示下载按钮。普通源码构建不附作者安装包。
 
 主流程：Tofu/Images from Link → Open & Collect → 帖子完整 DOM → 原 Tofu 标签页的图片勾选 → Review Import → 确认保存。取消/关闭等待页面会撤销待办任务。工具栏可直接收集当前帖子到新 Tofu 标签页。已打开的帖子仍需可正常显示；验证、未加载完整图片或平台改版可能阻止收集。扩展不保证图片是最高分辨率，也不绕过平台限制。
+
+## 多图图集检查
+
+```sh
+cd web
+# 保持 npm run dev -- --port 5186 运行
+node scripts/gallery-check.mjs
+TOFU_TEST_DESKTOP=1 node scripts/gallery-check.mjs
+node scripts/gallery-sync-check.mjs
+```
+
+前两项也支持 TOFU_TEST_URL 指向 build 的 preview。gallery-sync-check 需要开发服务器，拦截真实 sync 模块的底层客户端，使用模拟后台和两套隔离本地库，不使用真实账号；验证所有原图/缩略图上传和另一端读取。旧批量导入测试显式选择 Separate items，以继续验证部分确认/取消。

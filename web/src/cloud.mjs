@@ -1,6 +1,7 @@
 import {createClient} from '@supabase/supabase-js';
 import {readState,updateState,getFile,putFiles,backup} from './storage.mjs';
 import {emptyDocument,mergeDocuments,stable,validate} from './model.mjs';
+import {mediaIds} from './gallery.mjs';
 export const supabaseURL=import.meta.env.VITE_SUPABASE_URL||'';
 export const supabaseKey=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY||'';
 export const cloudConfigured=Boolean(supabaseURL&&supabaseKey);
@@ -20,8 +21,8 @@ export async function synchronize(scope){
     const initial=await readState(scope);if(!initial.enabled)return;
     const remote=await readCloud(client);if(remote.version<initial.cloudVersion)throw Error('Cloud history changed unexpectedly. Sync is paused.');
     const merged=mergeDocuments(initial.baseline,initial.document,remote.document);
-    const known=new Set(remote.document.items.flatMap(i=>[i.assetId,i.thumbnailId]).filter(Boolean));
-    for(const i of merged.items){for(const id of [i.assetId,i.thumbnailId].filter(Boolean)){if(known.has(id))continue;const blob=await getFile(scope,id);if(!blob)throw Error(`The original file for “${i.title}” is missing locally. Sync is paused.`);const {error}=await client.storage.from('tofu-media').upload(path(scope,id),blob,{contentType:blob.type||i.mime||'application/octet-stream',upsert:false});if(error&&String(error.statusCode)!=='409')throw error;}}
+    const known=new Set(remote.document.items.flatMap(mediaIds));
+    for(const i of merged.items){for(const id of mediaIds(i)){if(known.has(id))continue;const blob=await getFile(scope,id);if(!blob)throw Error(`The original file for “${i.title}” is missing locally. Sync is paused.`);const {error}=await client.storage.from('tofu-media').upload(path(scope,id),blob,{contentType:blob.type||i.mime||'application/octet-stream',upsert:false});if(error&&String(error.statusCode)!=='409')throw error;known.add(id);}}
     let accepted=remote;
     if(stable(merged)!==stable(remote.document)){
       const {data,error}=await client.rpc('tofu_save_snapshot',{expected_version:remote.version,next_document:merged});
@@ -37,7 +38,7 @@ export async function synchronize(scope){
 }
 export async function enableSync(scope,copyLocal){
  await backup(scope);
- if(copyLocal){const guest=await readState('local');for(const i of guest.document.items){for(const id of [i.assetId,i.thumbnailId].filter(Boolean)){const blob=await getFile('local',id);if(blob)await putFiles([[scope+':'+id,blob]]);}}
+ if(copyLocal){const guest=await readState('local');for(const i of guest.document.items){for(const id of mediaIds(i)){const blob=await getFile('local',id);if(blob)await putFiles([[scope+':'+id,blob]]);}}
  await updateState(scope,s=>({...s,document:mergeDocuments(emptyDocument(),s.document,guest.document)}));}
  await updateState(scope,s=>({...s,enabled:true}));return synchronize(scope);
 }
