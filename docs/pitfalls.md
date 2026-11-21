@@ -114,3 +114,7 @@ Backdrop click handling alone is not the full dialog dismissal contract. Review 
 顶层 assetId/thumbnailId 只表示封面。上传、首次复制未登录本地库、已知文件去重均须通过 mediaIds 遍历 gallery.images，否则当前设备看似完整，另一设备只能打开首图。用两套隔离 IndexedDB 与模拟后台验证每张原图可读，而非仅断言图片数量。
 
 首图裁剪时，顶层 crop 与 gallery.images[0].crop 必须同时更新；其他页裁剪不应改变封面。未知图集版本/损坏元数据禁写，保留原件。
+
+## 逐张追加与批量拖入是两个不同入口
+
+多个文件同时 drop 不等于打开 Review Import 后可以继续追加。原 drop 在 dialog 存在时直接拒绝；必须同时开放 dragover/drop 接收，并让单张与多张共用同一草稿组件，否则从一张变成两张时 React 卸载重建会丢标题和裁剪。追加按 File 对象身份补入新条目，保留原顺序与稳定的裁剪组件 key；只在最后 Save 时写库。
