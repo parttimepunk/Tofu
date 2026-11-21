@@ -2,10 +2,10 @@ import React,{useState} from 'react';
 import CropEditor from './CropEditor.jsx';
 import {validURL} from './model.mjs';
 import {describeMedia} from './media-types.mjs';
-export default function ImportReview({files,onSave,onDone,initialSource='',initialTitle=''}){
+export default function ImportReview({files,onSave,onDone,initialSource='',initialTitle='',scopeChanged=false,libraryLabel='',onConfirmLibrary}){
  const [index,setIndex]=useState(0);
  const next=()=>{if(index+1<files.length)setIndex(index+1);else onDone();};
- return <ImportStep key={index} file={files[index]} index={index} total={files.length} initialSource={initialSource} initialTitle={initialTitle} onSave={async fields=>{await onSave(files[index],fields);next();}}/>;
+ return <>{scopeChanged&&<div role="alert" className="item-form"><p>Your library changed while reviewing. Your edits are preserved.</p><p>Save destination: {libraryLabel}</p><button className="secondary" onClick={onConfirmLibrary}>Use this library</button></div>}<ImportStep key={index} file={files[index]} index={index} total={files.length} initialSource={initialSource} initialTitle={initialTitle} onSave={async fields=>{await onSave(files[index],fields);next();}}/></>;
 }
 function ImportStep({file,index,total,onSave,initialSource,initialTitle}){
  const [title,setTitle]=useState(initialTitle?`${initialTitle} ${index+1}`:file.name.replace(/\.[^.]+$/,'')),[note,setNote]=useState(''),[source,setSource]=useState(initialSource),[saving,setSaving]=useState(false),[error,setError]=useState('');

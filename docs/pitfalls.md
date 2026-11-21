@@ -104,3 +104,7 @@ Safari “Load failed” alone does not identify the failing network hop. Inspec
 ### Import cancellation needs an explicit boundary
 
 Backdrop click handling alone is not the full dialog dismissal contract. Review Import now prevents native cancel events and declares closedby=none; Escape must keep the draft as well. Verify the installed Safari app, not only Chromium. A CUA action rejected because the user changed the UI must be retried from fresh state before claiming refresh completed; without bundle-level evidence, do not assume the installed app loaded the release. Native acceptance on this fix verified both outside clicks and Escape retained an edited generated-image draft, then explicit Cancel cleaned it without saving.
+
+## 导入期间目标素材库变化
+
+现象：保存时显示账号变化，重复点击无效。目标校验应保留，不能为恢复保存而去掉账号隔离。导入确认页须提供显式重新确认当前库的入口，保留选图、标题、备注和裁剪；同账号令牌刷新不应当作换账号。真实触发来源须与本地模拟测试区别记录。

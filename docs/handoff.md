@@ -156,3 +156,10 @@ User clarified that an accidental outside click must never cancel Review Import.
 The follow-up explicitly prevents the dialog cancel event during import and sets closedby=none, in addition to ignoring backdrop clicks. Thus Escape also retains the draft; only the visible Cancel button or completing saves dismisses the import through normal app UI. This supersedes the earlier documented Escape-to-cancel behavior. Regression covers Escape and a cancelable native cancel event. All 47 unit tests, build and isolated import review check passed. Published within the same approved repair scope, preserving the existing extension/phone artifacts.
 
 After a successful refresh of the actual installed Safari web app, a generated test image reached Review Import. Clicking right-side background retained the panel; changing its title, clicking left-side background and pressing Escape retained both panel and title. Explicit Cancel returned to the library with the same pretest item count. No test media was saved and no real item was edited. This establishes installed-app behavior for the reported outside-click scenario; the original failed refresh prevents assigning the earlier failure solely to Safari event dispatch.
+
+## 2026-11-21 导入账号变化导致保存被阻挡
+
+- 用户安装版实际显示账号变化错误，图片与编辑内容仍在。不能据此判断为会话刷新误判，具体变化来源尚未确认。
+- 导入目标变化时增加显式确认当前库，保留标题、备注及裁剪；保持账号隔离，未确认前阻挡保存。选文件返回时从当前账号引用获取目标，减少旧事件闭包导致的误判。
+- 隔离 Playwright 验证：切换账号前不写入、确认后仅写目标库、编辑与裁剪保留、同账号刷新可继续。既有导入流程及 47 项检查通过。
+- 用户已授权网站发布与 GitHub 同步。源码准备提交；网站发布因 Vercel 项目空间授权返回 403，已请求恢复访问，仍待发布与线上验收。用户当前 App 草稿保留，未刷新、未保存真实图片。
